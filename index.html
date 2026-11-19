@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>عين سين — إدارة واعتماد الأسئلة</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="logo-badge">ع س</div>
+        <div>
+          <h1>عين سين</h1>
+          <p class="subtitle">بوابة مراجعة واعتماد بنك الأسئلة</p>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="themeToggle" class="btn btn-ghost" title="تبديل المظهر">
+          <span id="themeIcon">🌙</span>
+          <span id="themeLabel">الوضع الداكن</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Upload & Export Controls -->
+    <section class="control-panel card">
+      <div class="upload-area" id="dropZone">
+        <input type="file" id="jsonFileInput" accept=".json,application/json" hidden />
+        <div class="upload-content">
+          <div class="upload-icon">📂</div>
+          <h3>رفع ملف الأسئلة (JSON)</h3>
+          <p>اسحب الملف هنا أو اضغط للاختيار — يدعم المصفوفات أو الكائنات التي تحتوي على الأسئلة</p>
+          <button type="button" class="btn btn-primary" id="selectFileBtn">اختيار ملف JSON</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="stats">
+          <div class="stat-pill">
+            <span>الكل:</span>
+            <strong id="countAll">0</strong>
+          </div>
+          <div class="stat-pill pending">
+            <span>جارِ الاعتماد:</span>
+            <strong id="countPending">0</strong>
+          </div>
+          <div class="stat-pill approved">
+            <span>المعتمدة:</span>
+            <strong id="countApproved">0</strong>
+          </div>
+        </div>
+
+        <div class="export-group">
+          <button type="button" class="btn btn-success" id="exportApprovedBtn" disabled>
+            ⬇️ تصدير المعتمدة (JSON)
+          </button>
+          <button type="button" class="btn btn-secondary" id="exportPendingBtn" disabled>
+            ⬇️ تصدير جارِ الاعتماد (JSON)
+          </button>
+          <button type="button" class="btn btn-danger-outline" id="clearDataBtn" title="مسح البيانات المحفوظة">
+            🗑️ مسح الكل
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabs & Filters -->
+    <section class="tabs-bar">
+      <div class="tabs">
+        <button class="tab active" data-tab="pending" id="tabPending">
+          ⏳ جارِ الاعتماد (<span id="tabPendingCount">0</span>)
+        </button>
+        <button class="tab" data-tab="approved" id="tabApproved">
+          ✅ المعتمدة (<span id="tabApprovedCount">0</span>)
+        </button>
+      </div>
+
+      <div class="filters">
+        <select id="categoryFilter" class="input">
+          <option value="all">جميع التصنيفات</option>
+        </select>
+        <input type="search" id="searchInput" class="input" placeholder="بحث في نص السؤال أو الإجابة..." />
+      </div>
+    </section>
+
+    <!-- Cards Grid -->
+    <section id="cardsGrid" class="cards-grid"></section>
+
+    <div id="emptyState" class="empty-state card">
+      <div class="empty-icon">🗂️</div>
+      <h3 id="emptyTitle">لا توجد أسئلة حالياً</h3>
+      <p id="emptyDesc">ارفع ملف JSON للبدء في مراجعة الأسئلة واعتمادها.</p>
+    </div>
+  </main>
+
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal card">
+      <div class="modal-header">
+        <h2>تعديل السؤال</h2>
+        <button type="button" class="btn-icon" id="closeModalBtn">✕</button>
+      </div>
+      <form id="editForm" class="modal-body">
+        <input type="hidden" id="editIndex" />
+
+        <div class="form-row two-cols">
+          <div class="form-group">
+            <label for="editId">رقم السؤال (ID)</label>
+            <input type="text" id="editId" class="input" />
+          </div>
+          <div class="form-group">
+            <label for="editCategory">التصنيف</label>
+            <input type="text" id="editCategory" class="input" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="editQuestion">نص السؤال</label>
+          <textarea id="editQuestion" class="input" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>الخيارات (اختر الإجابة الصحيحة)</label>
+          <div id="optionsContainer" class="options-editor"></div>
+          <button type="button" class="btn btn-ghost btn-sm" id="addOptionBtn">+ إضافة خيار</button>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelEditBtn">إلغاء</button>
+          <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
